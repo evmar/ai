@@ -1,2 +1,4 @@
 github.com/bitly/go-simplejson v0.5.1 h1:xgwPbetQScXt1gh9BmoJ6j9JMr3TElvuIyjR8pgdoow=
 github.com/bitly/go-simplejson v0.5.1/go.mod h1:YOPVLzCfwK14b4Sff3oP1AmGhI9T9Vsg84etUnlyp+Q=
+github.com/ollama/ollama v0.1.34 h1:NgxOobKmw8mySG1UKEMRJyKP5o+gfmrTpotC7enPEO8=
+github.com/ollama/ollama v0.1.34/go.mod h1:u9Bo9/pxhGe2YiL1I/ePNRTH0Ik5U3B2C/i2EYp1lZk=
