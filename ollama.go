@@ -19,7 +19,10 @@ func NewOllama() (*ollama, error) {
 	return &ollama{client: client}, nil
 }
 
-func (oll *ollama) callText(sys string, prompts []string) (string, error) {
+func (oll *ollama) callText(sys string, json bool, prompts []string) (string, error) {
+	if json {
+		panic("json not implemented")
+	}
 	ctx := context.Background()
 	if len(prompts) == 1 {
 		req := &api.GenerateRequest{Model: "llama3", Prompt: prompts[0]}

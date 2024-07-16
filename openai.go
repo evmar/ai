@@ -79,7 +79,7 @@ func (oai *openAI) call(url string, jsonReq map[string]interface{}) ([]byte, err
 	return body, err
 }
 
-func (oai *openAI) callText(sys string, prompts []string) (string, error) {
+func (oai *openAI) callText(sys string, json bool, prompts []string) (string, error) {
 	messages := []interface{}{
 		map[string]interface{}{
 			"role":    "system",
@@ -99,11 +99,16 @@ func (oai *openAI) callText(sys string, prompts []string) (string, error) {
 		})
 	}
 
-	body, err := oai.call("https://api.openai.com/v1/chat/completions", map[string]interface{}{
+	params := map[string]interface{}{
 		"model":      "gpt-3.5-turbo",
 		"messages":   messages,
 		"max_tokens": 500,
-	})
+	}
+	if json {
+		params["response_format"] = map[string]interface{}{"type": "json_object"}
+	}
+
+	body, err := oai.call("https://api.openai.com/v1/chat/completions", params)
 	if err != nil {
 		return "", err
 	}

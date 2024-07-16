@@ -73,7 +73,7 @@ func argOrStdin(arg string) (string, error) {
 }
 
 type llm interface {
-	callText(sys string, prompts []string) (string, error)
+	callText(sys string, json bool, prompts []string) (string, error)
 }
 
 func run(args []string) error {
@@ -129,6 +129,7 @@ func run(args []string) error {
 		flags := flag.NewFlagSet("text", flag.ExitOnError)
 		sys := flags.String("sys", "", "system prompt")
 		multi := flags.String("multi", "", "multi-shot input")
+		json := flags.Bool("json", false, "output json")
 		flags.Parse(args)
 		if *sys == "" {
 			return fmt.Errorf("specify -sys")
@@ -150,7 +151,7 @@ func run(args []string) error {
 			return err
 		}
 		prompts = append(prompts, prompt)
-		msg, err := llm.callText(*sys, prompts)
+		msg, err := llm.callText(*sys, *json, prompts)
 		if err != nil {
 			return err
 		}
