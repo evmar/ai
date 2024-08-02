@@ -84,10 +84,11 @@ func run(args []string) error {
 
 	var llm llm
 	var oai *openAI
+	var err error
 
 	switch *flagServer {
 	case "openai":
-		oai, err := NewOpenAI()
+		oai, err = NewOpenAI()
 		if err != nil {
 			return err
 		}
