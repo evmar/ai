@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	flagServer  = flag.String("server", "ollama", "ollama or openai")
+	flagBackend = flag.String("backend", "", "backend name to use from config")
 	flagVerbose = flag.Bool("v", false, "log http")
 )
 
@@ -77,6 +77,11 @@ type llm interface {
 }
 
 func run(args []string) error {
+	config, err := LoadConfig()
+	if err != nil {
+		return err
+	}
+
 	if len(args) < 1 {
 		return fmt.Errorf("specify mode")
 	}
@@ -84,9 +89,22 @@ func run(args []string) error {
 
 	var llm llm
 	var oai *openAI
-	var err error
 
-	switch *flagServer {
+	backendName := *flagBackend
+	if backendName == "" {
+		backendName = config.DefaultBackend
+	}
+	if backendName == "" {
+		return fmt.Errorf("specify -backend or set default_backend in config")
+	}
+	backend, ok := config.Backend[backendName]
+	if !ok {
+		return fmt.Errorf("backend %q not found", backendName)
+	}
+
+	switch backend.Mode {
+	case "":
+		return fmt.Errorf("backend %q needs mode= config", backendName)
 	case "openai":
 		oai, err = NewOpenAI()
 		if err != nil {
@@ -94,7 +112,7 @@ func run(args []string) error {
 		}
 		llm = oai
 	case "ollama":
-		ollama, err := NewOllama("llama3.2:1b")
+		ollama, err := NewOllama(backend)
 		if err != nil {
 			return err
 		}

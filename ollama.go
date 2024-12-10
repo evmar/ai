@@ -12,12 +12,12 @@ type ollama struct {
 	model  string
 }
 
-func NewOllama(model string) (*ollama, error) {
+func NewOllama(config *ConfigBackend) (*ollama, error) {
 	client, err := api.ClientFromEnvironment()
 	if err != nil {
 		return nil, err
 	}
-	return &ollama{client: client, model: model}, nil
+	return &ollama{client: client, model: config.Model}, nil
 }
 
 func (oll *ollama) callText(sys string, json bool, prompts []string) (string, error) {
