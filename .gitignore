@@ -1,7 +1,3 @@
 /apikey.sh
 /ai
-*.jpg
-*.jpeg
-*.mp3
-*.png
-*.HEIC
+/data
