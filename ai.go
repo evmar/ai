@@ -5,37 +5,15 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
 	"strings"
+
+	"github.com/evmar/ai/image"
 )
 
 var (
 	flagBackend = flag.String("backend", "", "backend name to use from config")
 	flagVerbose = flag.Bool("v", false, "log http")
 )
-
-type loadedImage struct {
-	mimeType string
-	data     []byte
-}
-
-func loadImage(imagePath string) (*loadedImage, error) {
-	mimeType := ""
-	switch ext := path.Ext(imagePath); ext {
-	case ".jpg", ".jpeg":
-		mimeType = "image/jpeg"
-	case ".png":
-		mimeType = "image/png"
-	default:
-		return nil, fmt.Errorf("unknown ext %s", ext)
-	}
-
-	data, err := os.ReadFile(imagePath)
-	if err != nil {
-		return nil, err
-	}
-	return &loadedImage{mimeType: mimeType, data: data}, nil
-}
 
 func parseMulti(multi string) ([]string, error) {
 	parts := strings.SplitAfterN(multi, "\n", 2)
@@ -125,15 +103,15 @@ func run(args []string) error {
 	case "img":
 		flags := flag.NewFlagSet("img", flag.ExitOnError)
 		prompt := flags.String("prompt", "", "prompt")
-		image := flags.String("image", "", "image path")
+		imagePath := flags.String("image", "", "image path")
 		flags.Parse(args)
 		if *prompt == "" {
 			return fmt.Errorf("specify -prompt")
 		}
-		if *image == "" {
+		if *imagePath == "" {
 			return fmt.Errorf("specify -image path")
 		}
-		imageBytes, err := loadImage(*image)
+		imageBytes, err := image.LoadImage(*imagePath)
 		if err != nil {
 			return err
 		}

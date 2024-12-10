@@ -11,6 +11,8 @@ import (
 	"net/http/httputil"
 	"os"
 
+	"github.com/evmar/ai/image"
+
 	"github.com/bitly/go-simplejson"
 )
 
@@ -121,7 +123,7 @@ func (oai *openAI) callText(sys string, json bool, prompts []string) (string, er
 	return msg, nil
 }
 
-func (oai *openAI) callVision(image *loadedImage, prompt string) (string, error) {
+func (oai *openAI) callVision(image *image.LoadedImage, prompt string) (string, error) {
 	body, err := oai.call("https://api.openai.com/v1/chat/completions", map[string]interface{}{
 		"model": "gpt-4-vision-preview",
 		"messages": []interface{}{
@@ -135,7 +137,7 @@ func (oai *openAI) callVision(image *loadedImage, prompt string) (string, error)
 					map[string]interface{}{
 						"type": "image_url",
 						"image_url": map[string]interface{}{
-							"url":    fmt.Sprintf("data:%s;base64,%s", image.mimeType, base64.StdEncoding.EncodeToString(image.data)),
+							"url":    fmt.Sprintf("data:%s;base64,%s", image.MimeType, base64.StdEncoding.EncodeToString(image.Data)),
 							"detail": "high",
 						},
 					},
