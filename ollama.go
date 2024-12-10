@@ -3,6 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"net"
+	"net/http"
+	"net/url"
+	"time"
 
 	"github.com/ollama/ollama/api"
 )
@@ -12,11 +16,32 @@ type ollama struct {
 	model  string
 }
 
-func NewOllama(config *ConfigBackend) (*ollama, error) {
-	client, err := api.ClientFromEnvironment()
+func getClientURL(config *ConfigBackend) (*url.URL, error) {
+	if config.URL != "" {
+		return url.Parse(config.URL)
+	}
+
+	ollamaHost, err := api.GetOllamaHost()
 	if err != nil {
 		return nil, err
 	}
+	return &url.URL{
+		Scheme: ollamaHost.Scheme,
+		Host:   net.JoinHostPort(ollamaHost.Host, ollamaHost.Port),
+	}, nil
+}
+
+func NewOllama(config *ConfigBackend) (*ollama, error) {
+	clientURL, err := getClientURL(config)
+	if err != nil {
+		return nil, err
+	}
+	httpClient := &http.Client{
+		Transport: &http.Transport{
+			DialContext: (&net.Dialer{Timeout: 2 * time.Second}).DialContext,
+		},
+	}
+	client := api.NewClient(clientURL, httpClient)
 	return &ollama{client: client, model: config.Model}, nil
 }
 

@@ -17,4 +17,6 @@ mode = "openai"
 [backend.llama]
 mode = "ollama"
 model = "llama3.2:1b"
+# if url unspecified, obeys $OLLAMA_HOST env, defaulting to localhost
+url = "http://somehost:11434"
 ```

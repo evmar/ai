@@ -14,7 +14,7 @@ type Config struct {
 
 type ConfigBackend struct {
 	Mode  string `toml:"mode"`
-	Host  string `toml:"host"`
+	URL   string `toml:"url"`
 	Model string `toml:"model"`
 }
 
