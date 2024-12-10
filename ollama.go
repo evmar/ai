@@ -20,7 +20,7 @@ func NewOllama(config *ConfigBackend) (*ollama, error) {
 	return &ollama{client: client, model: config.Model}, nil
 }
 
-func (oll *ollama) callText(sys string, json bool, prompts []string) (string, error) {
+func (oll *ollama) CallText(sys string, json bool, prompts []string) (string, error) {
 	if json {
 		panic("json not implemented")
 	}

@@ -51,7 +51,7 @@ func argOrStdin(arg string) (string, error) {
 }
 
 type llm interface {
-	callText(sys string, json bool, prompts []string) (string, error)
+	CallText(sys string, json bool, prompts []string) (string, error)
 }
 
 func run(args []string) error {
@@ -148,7 +148,7 @@ func run(args []string) error {
 			return err
 		}
 		prompts = append(prompts, prompt)
-		msg, err := llm.callText(*sys, *json, prompts)
+		msg, err := llm.CallText(*sys, *json, prompts)
 		if err != nil {
 			return err
 		}

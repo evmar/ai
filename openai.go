@@ -81,7 +81,7 @@ func (oai *openAI) call(url string, jsonReq map[string]interface{}) ([]byte, err
 	return body, err
 }
 
-func (oai *openAI) callText(sys string, json bool, prompts []string) (string, error) {
+func (oai *openAI) CallText(sys string, json bool, prompts []string) (string, error) {
 	messages := []interface{}{
 		map[string]interface{}{
 			"role":    "system",
