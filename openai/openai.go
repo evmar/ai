@@ -11,10 +11,27 @@ import (
 	"net/http/httputil"
 	"os"
 
-	"github.com/evmar/ai/image"
-
 	"github.com/bitly/go-simplejson"
+	"github.com/evmar/ai/image"
 )
+
+type Error struct {
+	Message string
+}
+
+func (e *Error) Error() string {
+	return fmt.Sprintf("openai: %s", e.Message)
+}
+
+func getError(j *simplejson.Json) *Error {
+	j = j.Get("error")
+	if j == nil {
+		return nil
+	}
+	return &Error{
+		Message: j.Get("message").MustString(),
+	}
+}
 
 type loggingTransport struct{}
 
@@ -119,6 +136,9 @@ func (oai *Client) CallText(sys string, json bool, prompts []string) (string, er
 	if err != nil {
 		return "", err
 	}
+	if err := getError(j); err != nil {
+		return "", err
+	}
 
 	msg := j.Get("choices").GetIndex(0).Get("message").Get("content").MustString()
 	return msg, nil
@@ -154,10 +174,12 @@ func (oai *Client) CallVision(image *image.LoadedImage, prompt string) (string, 
 	if err != nil {
 		return "", err
 	}
+	if err := getError(j); err != nil {
+		return "", err
+	}
 
 	msg := j.Get("choices").GetIndex(0).Get("message").Get("content").MustString()
 	return msg, nil
-
 }
 
 func (oai *Client) CallSpeech(text, outPath string) error {
