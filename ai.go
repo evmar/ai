@@ -94,7 +94,7 @@ func run(args []string) error {
 		}
 		llm = oai
 	case "ollama":
-		ollama, err := NewOllama()
+		ollama, err := NewOllama("llama3.2:1b")
 		if err != nil {
 			return err
 		}

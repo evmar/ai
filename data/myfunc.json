@@ -1,0 +1,39 @@
+{
+    "name": "decl",
+    "description": "use declared function prototype",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "return_type": {
+                "type": "string",
+                "description": "return type of the function"
+            },
+            "name": {
+                "type": "string",
+                "description": "name of the function"
+            },
+            "args": {
+                "type": "array",
+                "description": "function parameters",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "attrs": {
+                            "type": "string"
+                        },
+                        "type": {
+                            "type": "string"
+                        },
+                        "name": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "required": [
+            "return_type",
+            "name"
+        ]
+    }
+}

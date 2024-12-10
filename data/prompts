@@ -1,0 +1,90 @@
+---
+BOOL MoveToEx(
+  [in]  HDC     hdc,
+  [in]  int     x,
+  [in]  int     y,
+  [out] LPPOINT lppt
+);
+---
+#[win32_derive::dllexport]
+pub fn MoveToEx(
+    _machine: &mut Machine,
+    hdc: HDC,
+    x: u32,
+    y: u32,
+    lppt: Option<&mut POINT>,
+) -> bool {
+    todo!();
+}
+---
+BOOL GetMessageA(
+  [out]          LPMSG lpMsg,
+  [in, optional] HWND  hWnd,
+  [in]           UINT  wMsgFilterMin,
+  [in]           UINT  wMsgFilterMax
+);
+---
+#[win32_derive::dllexport]
+pub fn GetMessageA(
+    machine: &mut Machine,
+    lpMsg: Option<&mut MSG>,
+    hWnd: HWND,
+    wMsgFilterMin: u32,
+    wMsgFilterMax: u32,
+) -> i32 {
+    todo!();
+}
+---
+void OutputDebugStringA(
+  [in] LPCSTR lpOutputString
+);
+---
+#[win32_derive::dllexport]
+pub fn OutputDebugStringA(_machine: &mut Machine, msg: Option<&str>) -> u32 {
+    log::warn!("OutputDebugStringA: {:?}", msg);
+    0
+}
+---
+typedef struct {
+  DWORD        biSize;
+  LONG         biWidth;
+  LONG         biHeight;
+  WORD         biPlanes;
+  WORD         biBitCount;
+} BITMAPINFOHEADER, *LPBITMAPINFOHEADER, *PBITMAPINFOHEADER;
+---
+#[repr(C)]
+#[derive(Debug)]
+pub struct BITMAPINFOHEADER {
+    pub biSize: u32,
+    pub biWidth: u32,
+    pub biHeight: u32,
+    pub biPlanes: u16,
+    pub biBitCount: u16,
+}
+unsafe impl memory::Pod for BITMAPINFOHEADER {}
+---
+MMRESULT mixerGetLineInfoA(
+  HMIXEROBJ    hmxobj,
+  LPMIXERLINEA pmxl,
+  DWORD        fdwInfo
+);
+---
+#[win32_derive::dllexport]
+pub fn mixerGetLineInfoA(
+    hmxobj: HMIXEROBJ,
+    pmxl: Option<&mut MIXERLINEA>,
+    fdwInfo: u32,
+) -> MMRESULT {
+    todo!();
+}
+---
+HFILE _lclose(
+  HFILE hFile
+);
+---
+#[win32_derive::dllexport]
+pub fn _lclose(_machine: &mut Machine, hFile: HFILE) -> HFILE {
+    todo!();
+}
+---
