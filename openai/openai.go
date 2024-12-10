@@ -1,4 +1,4 @@
-package main
+package openai
 
 import (
 	"bytes"
@@ -32,19 +32,20 @@ func (s *loggingTransport) RoundTrip(r *http.Request) (*http.Response, error) {
 	return resp, err
 }
 
-type openAI struct {
-	token string
+type Client struct {
+	token   string
+	Verbose bool
 }
 
-func NewOpenAI() (*openAI, error) {
+func New() (*Client, error) {
 	openaiToken := os.Getenv("OPENAI_API_KEY")
 	if openaiToken == "" {
 		return nil, fmt.Errorf("set OPENAI_API_KEY")
 	}
-	return &openAI{token: openaiToken}, nil
+	return &Client{token: openaiToken}, nil
 }
 
-func (oai *openAI) call(url string, jsonReq map[string]interface{}) ([]byte, error) {
+func (oai *Client) call(url string, jsonReq map[string]interface{}) ([]byte, error) {
 	body, err := json.Marshal(jsonReq)
 	if err != nil {
 		return nil, err
@@ -57,7 +58,7 @@ func (oai *openAI) call(url string, jsonReq map[string]interface{}) ([]byte, err
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", "Bearer "+oai.token)
 
-	if *flagVerbose {
+	if oai.Verbose {
 		http.DefaultClient.Transport = &loggingTransport{}
 	}
 	resp, err := http.DefaultClient.Do(req)
@@ -81,7 +82,7 @@ func (oai *openAI) call(url string, jsonReq map[string]interface{}) ([]byte, err
 	return body, err
 }
 
-func (oai *openAI) CallText(sys string, json bool, prompts []string) (string, error) {
+func (oai *Client) CallText(sys string, json bool, prompts []string) (string, error) {
 	messages := []interface{}{
 		map[string]interface{}{
 			"role":    "system",
@@ -123,7 +124,7 @@ func (oai *openAI) CallText(sys string, json bool, prompts []string) (string, er
 	return msg, nil
 }
 
-func (oai *openAI) callVision(image *image.LoadedImage, prompt string) (string, error) {
+func (oai *Client) CallVision(image *image.LoadedImage, prompt string) (string, error) {
 	body, err := oai.call("https://api.openai.com/v1/chat/completions", map[string]interface{}{
 		"model": "gpt-4-vision-preview",
 		"messages": []interface{}{
@@ -159,7 +160,7 @@ func (oai *openAI) callVision(image *image.LoadedImage, prompt string) (string, 
 
 }
 
-func (oai *openAI) callSpeech(text, outPath string) error {
+func (oai *Client) CallSpeech(text, outPath string) error {
 	body, err := oai.call("https://api.openai.com/v1/audio/speech", map[string]interface{}{
 		"model": "tts-1",
 		"input": text,

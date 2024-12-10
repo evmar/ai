@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/evmar/ai/image"
+	"github.com/evmar/ai/openai"
 )
 
 var (
@@ -66,7 +67,7 @@ func run(args []string) error {
 	mode, args := args[0], args[1:]
 
 	var llm llm
-	var oai *openAI
+	var oai *openai.Client
 
 	backendName := *flagBackend
 	if backendName == "" {
@@ -84,10 +85,11 @@ func run(args []string) error {
 	case "":
 		return fmt.Errorf("backend %q needs mode= config", backendName)
 	case "openai":
-		oai, err = NewOpenAI()
+		oai, err = openai.New()
 		if err != nil {
 			return err
 		}
+		oai.Verbose = *flagVerbose
 		llm = oai
 	case "ollama":
 		ollama, err := NewOllama(backend)
@@ -115,7 +117,7 @@ func run(args []string) error {
 		if err != nil {
 			return err
 		}
-		msg, err := oai.callVision(imageBytes, *prompt)
+		msg, err := oai.CallVision(imageBytes, *prompt)
 		if err != nil {
 			return err
 		}
@@ -166,7 +168,7 @@ func run(args []string) error {
 		if err != nil {
 			return err
 		}
-		if err := oai.callSpeech(text, "out.mp3"); err != nil {
+		if err := oai.CallSpeech(text, "out.mp3"); err != nil {
 			return err
 		}
 		return nil
