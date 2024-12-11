@@ -1,4 +1,4 @@
-package main
+package ollama
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	"github.com/ollama/ollama/api"
 )
 
-type ollama struct {
+type Client struct {
 	client *api.Client
 	model  string
 }
@@ -32,7 +32,7 @@ func getClientURL(config *config.Backend) (*url.URL, error) {
 	}, nil
 }
 
-func NewOllama(config *config.Backend) (*ollama, error) {
+func New(config *config.Backend) (*Client, error) {
 	clientURL, err := getClientURL(config)
 	if err != nil {
 		return nil, err
@@ -43,16 +43,16 @@ func NewOllama(config *config.Backend) (*ollama, error) {
 		},
 	}
 	client := api.NewClient(clientURL, httpClient)
-	return &ollama{client: client, model: config.Model}, nil
+	return &Client{client: client, model: config.Model}, nil
 }
 
-func (oll *ollama) CallText(sys string, json bool, prompts []string) (string, error) {
+func (c *Client) CallText(sys string, json bool, prompts []string) (string, error) {
 	if json {
 		panic("json not implemented")
 	}
 	ctx := context.Background()
 	if len(prompts) == 1 {
-		req := &api.GenerateRequest{Model: oll.model, Prompt: prompts[0]}
+		req := &api.GenerateRequest{Model: c.model, Prompt: prompts[0]}
 		if sys != "" {
 			req.System = sys
 		}
@@ -61,12 +61,12 @@ func (oll *ollama) CallText(sys string, json bool, prompts []string) (string, er
 			fmt.Print(resp.Response)
 			return nil
 		}
-		err := oll.client.Generate(ctx, req, resp)
+		err := c.client.Generate(ctx, req, resp)
 		if err != nil {
 			return "", err
 		}
 	} else {
-		req := &api.ChatRequest{Model: oll.model}
+		req := &api.ChatRequest{Model: c.model}
 		for i, prompt := range prompts {
 			var role string
 			if i%2 == 0 {
@@ -83,7 +83,7 @@ func (oll *ollama) CallText(sys string, json bool, prompts []string) (string, er
 			fmt.Print(resp.Message.Content)
 			return nil
 		}
-		err := oll.client.Chat(ctx, req, resp)
+		err := c.client.Chat(ctx, req, resp)
 		if err != nil {
 			return "", err
 		}

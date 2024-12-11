@@ -10,6 +10,7 @@ import (
 	"github.com/evmar/ai/config"
 	"github.com/evmar/ai/google"
 	"github.com/evmar/ai/image"
+	"github.com/evmar/ai/ollama"
 	"github.com/evmar/ai/openai"
 )
 
@@ -94,11 +95,11 @@ func run(args []string) error {
 		oai.Verbose = *flagVerbose
 		llm = oai
 	case "ollama":
-		ollama, err := NewOllama(backend)
+		c, err := ollama.New(backend)
 		if err != nil {
 			return err
 		}
-		llm = ollama
+		llm = c
 	case "google":
 		c, err := google.New()
 		if err != nil {
