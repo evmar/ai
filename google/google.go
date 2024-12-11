@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/bitly/go-simplejson"
 	"github.com/evmar/ai/net"
+	"github.com/evmar/ai/rawjson"
 )
 
 type Client struct {
@@ -51,18 +51,20 @@ func (c *Client) call(jsonReq map[string]interface{}) ([]byte, error) {
 }
 
 func parseText(body []byte) (string, error) {
-	j, err := simplejson.NewJson(body)
-	if err != nil {
+	var raw map[string]interface{}
+	if err := json.NewDecoder(bytes.NewReader(body)).Decode(&raw); err != nil {
 		return "", err
 	}
+	j := rawjson.New(raw)
 
 	cand := j.Get("candidates").GetIndex(0)
 	content := cand.Get("content")
-	parts := content.Get("parts").MustArray()
-	if len(parts) != 1 {
-		return "", fmt.Errorf("expected 1 part, got %d", len(parts))
+	parts := content.Get("parts")
+	l := parts.Len()
+	if l != 1 {
+		return "", fmt.Errorf("expected 1 part, got %d", l)
 	}
-	text := parts[0].(map[string]interface{})["text"].(string)
+	text := parts.GetIndex(0).Get("text").String()
 
 	return text, nil
 }

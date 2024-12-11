@@ -10,9 +10,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/bitly/go-simplejson"
 	"github.com/evmar/ai/image"
 	"github.com/evmar/ai/net"
+	"github.com/evmar/ai/rawjson"
 )
 
 type Error struct {
@@ -23,13 +23,13 @@ func (e *Error) Error() string {
 	return fmt.Sprintf("openai: %s", e.Message)
 }
 
-func getError(j *simplejson.Json) *Error {
+func getError(j *rawjson.RJSON) *Error {
 	j = j.Get("error")
 	if j == nil {
 		return nil
 	}
 	return &Error{
-		Message: j.Get("message").MustString(),
+		Message: j.Get("message").String(),
 	}
 }
 
@@ -116,7 +116,7 @@ func (oai *Client) CallText(sys string, json bool, prompts []string) (string, er
 	if err != nil {
 		return "", err
 	}
-	j, err := simplejson.NewJson(body)
+	j, err := rawjson.Parse(body)
 	if err != nil {
 		return "", err
 	}
@@ -124,7 +124,7 @@ func (oai *Client) CallText(sys string, json bool, prompts []string) (string, er
 		return "", err
 	}
 
-	msg := j.Get("choices").GetIndex(0).Get("message").Get("content").MustString()
+	msg := j.Get("choices").GetIndex(0).Get("message").Get("content").String()
 	return msg, nil
 }
 
@@ -154,7 +154,7 @@ func (oai *Client) CallVision(image *image.LoadedImage, prompt string) (string, 
 	if err != nil {
 		return "", err
 	}
-	j, err := simplejson.NewJson(body)
+	j, err := rawjson.Parse(body)
 	if err != nil {
 		return "", err
 	}
@@ -162,7 +162,7 @@ func (oai *Client) CallVision(image *image.LoadedImage, prompt string) (string, 
 		return "", err
 	}
 
-	msg := j.Get("choices").GetIndex(0).Get("message").Get("content").MustString()
+	msg := j.Get("choices").GetIndex(0).Get("message").Get("content").String()
 	return msg, nil
 }
 

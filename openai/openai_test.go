@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bitly/go-simplejson"
+	"github.com/evmar/ai/rawjson"
 )
 
 func TestQuotaError(t *testing.T) {
@@ -18,7 +18,7 @@ func TestQuotaError(t *testing.T) {
 		}
 	}`
 
-	j, err := simplejson.NewJson([]byte(quotaErrorText))
+	j, err := rawjson.Parse([]byte(quotaErrorText))
 	if err != nil {
 		t.Fatal(err)
 	}
