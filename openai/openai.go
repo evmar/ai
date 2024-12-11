@@ -8,11 +8,11 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"net/http/httputil"
 	"os"
 
 	"github.com/bitly/go-simplejson"
 	"github.com/evmar/ai/image"
+	"github.com/evmar/ai/net"
 )
 
 type Error struct {
@@ -31,22 +31,6 @@ func getError(j *simplejson.Json) *Error {
 	return &Error{
 		Message: j.Get("message").MustString(),
 	}
-}
-
-type loggingTransport struct{}
-
-func (s *loggingTransport) RoundTrip(r *http.Request) (*http.Response, error) {
-	bytes, _ := httputil.DumpRequestOut(r, true)
-
-	resp, err := http.DefaultTransport.RoundTrip(r)
-	// err is returned after dumping the response
-
-	respBytes, _ := httputil.DumpResponse(resp, true)
-	bytes = append(bytes, respBytes...)
-
-	fmt.Printf("%s\n", bytes)
-
-	return resp, err
 }
 
 type Client struct {
@@ -76,7 +60,7 @@ func (oai *Client) call(url string, jsonReq map[string]interface{}) ([]byte, err
 	req.Header.Add("Authorization", "Bearer "+oai.token)
 
 	if oai.Verbose {
-		http.DefaultClient.Transport = &loggingTransport{}
+		http.DefaultClient.Transport = &net.LoggingTransport{}
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
