@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/evmar/ai/config"
 	"github.com/evmar/ai/google"
 	"github.com/evmar/ai/image"
 	"github.com/evmar/ai/openai"
@@ -57,7 +58,7 @@ type llm interface {
 }
 
 func run(args []string) error {
-	config, err := LoadConfig()
+	config, err := config.Load()
 	if err != nil {
 		return err
 	}
