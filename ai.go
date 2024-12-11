@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/evmar/ai/google"
 	"github.com/evmar/ai/image"
 	"github.com/evmar/ai/openai"
 )
@@ -97,8 +98,15 @@ func run(args []string) error {
 			return err
 		}
 		llm = ollama
+	case "google":
+		c, err := google.New()
+		if err != nil {
+			return err
+		}
+		c.Verbose = *flagVerbose
+		llm = c
 	default:
-		return fmt.Errorf("-server must be openai or ollama")
+		return fmt.Errorf("invalid backend mode %q", backend.Mode)
 	}
 
 	switch mode {
