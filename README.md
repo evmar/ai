@@ -1,6 +1,10 @@
-A simple command-line wrapper for the OpenAI API and ollama.
+A simple command-line wrapper for making LLM calls to the OpenAI API,
+Ollama, and Google Gemini API.
 
-There are probably better ones out there, but this one is mine!
+There are surely better options out there, but this one is mine!
+
+(I think if you actually wanted to use someone's software to make LLM
+calls, [llm](https://github.com/simonw/llm) is a good choice.)
 
 ## Setup
 
