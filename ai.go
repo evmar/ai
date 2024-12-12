@@ -101,7 +101,7 @@ func run(args []string) error {
 		}
 		llm = c
 	case "google":
-		c, err := google.New()
+		c, err := google.New(backend)
 		if err != nil {
 			return err
 		}

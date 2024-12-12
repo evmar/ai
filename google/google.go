@@ -8,21 +8,23 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/evmar/ai/config"
 	"github.com/evmar/ai/net"
 	"github.com/evmar/ai/rawjson"
 )
 
 type Client struct {
 	apikey  string
+	model   string
 	Verbose bool
 }
 
-func New() (*Client, error) {
+func New(config *config.Backend) (*Client, error) {
 	apikey := os.Getenv("GOOGLE_API_KEY")
 	if apikey == "" {
 		return nil, fmt.Errorf("set GOOGLE_API_KEY")
 	}
-	return &Client{apikey: apikey}, nil
+	return &Client{apikey: apikey, model: config.Model}, nil
 }
 
 func (c *Client) call(jsonReq map[string]interface{}) ([]byte, error) {
@@ -31,7 +33,7 @@ func (c *Client) call(jsonReq map[string]interface{}) ([]byte, error) {
 		return nil, err
 	}
 
-	url := "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + c.apikey
+	url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s", c.model, c.apikey)
 
 	req, err := http.NewRequest("POST", url, bytes.NewReader(body))
 	if err != nil {
@@ -46,6 +48,9 @@ func (c *Client) call(jsonReq map[string]interface{}) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("http status %d", resp.StatusCode)
+	}
 
 	return io.ReadAll(resp.Body)
 }
@@ -53,7 +58,7 @@ func (c *Client) call(jsonReq map[string]interface{}) ([]byte, error) {
 func parseText(body []byte) (string, error) {
 	var raw map[string]interface{}
 	if err := json.NewDecoder(bytes.NewReader(body)).Decode(&raw); err != nil {
-		return "", err
+		return "", fmt.Errorf("parsing response: %w", err)
 	}
 	j := rawjson.New(raw)
 

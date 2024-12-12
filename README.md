@@ -24,4 +24,6 @@ url = "http://somehost:11434"
 [backend.google]
 # requires $GOOGLE_API_KEY in env
 mode = "google"
+model = "gemini-1.5-flash"
+# model = "gemini-2.0-flash-exp"
 ```
