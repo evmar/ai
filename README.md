@@ -1,5 +1,5 @@
-A simple command-line wrapper for making LLM calls to the OpenAI API,
-Ollama, and Google Gemini API.
+A simple command-line wrapper for making LLM calls to OpenAI,
+Ollama, and Google Gemini.
 
 There are surely better options out there, but this one is mine!
 
