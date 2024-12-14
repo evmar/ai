@@ -7,7 +7,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/evmar/ai/config"
 	"github.com/evmar/ai/google"
 	"github.com/evmar/ai/image"
 	"github.com/evmar/ai/llm"
@@ -60,7 +59,7 @@ type LLMText interface {
 }
 
 func run(args []string) error {
-	config, err := config.Load()
+	config, err := llm.LoadConfig()
 	if err != nil {
 		return err
 	}
