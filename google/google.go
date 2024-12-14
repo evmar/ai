@@ -10,7 +10,6 @@ import (
 
 	"github.com/evmar/ai/config"
 	"github.com/evmar/ai/net"
-	"github.com/evmar/ai/rawjson"
 )
 
 type Client struct {
@@ -56,21 +55,11 @@ func (c *Client) call(jsonReq map[string]interface{}) ([]byte, error) {
 }
 
 func parseText(body []byte) (string, error) {
-	var raw map[string]interface{}
-	if err := json.NewDecoder(bytes.NewReader(body)).Decode(&raw); err != nil {
+	var resp GenerateContentResponse
+	if err := json.NewDecoder(bytes.NewReader(body)).Decode(&resp); err != nil {
 		return "", fmt.Errorf("parsing response: %w", err)
 	}
-	j := rawjson.New(raw)
-
-	cand := j.Get("candidates").GetIndex(0)
-	content := cand.Get("content")
-	parts := content.Get("parts")
-	l := parts.Len()
-	if l != 1 {
-		return "", fmt.Errorf("expected 1 part, got %d", l)
-	}
-	text := parts.GetIndex(0).Get("text").String()
-
+	text := resp.Candidates[0].Content.Parts[0].Text
 	return text, nil
 }
 
