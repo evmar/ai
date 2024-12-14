@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/evmar/ai/config"
+	"github.com/evmar/ai/llm"
 	"github.com/ollama/ollama/api"
 )
 
@@ -17,7 +17,7 @@ type Client struct {
 	model  string
 }
 
-func getClientURL(config *config.Backend) (*url.URL, error) {
+func getClientURL(config *llm.BackendConfig) (*url.URL, error) {
 	if config.URL != "" {
 		return url.Parse(config.URL)
 	}
@@ -32,7 +32,7 @@ func getClientURL(config *config.Backend) (*url.URL, error) {
 	}, nil
 }
 
-func New(config *config.Backend) (*Client, error) {
+func New(config *llm.BackendConfig) (*Client, error) {
 	clientURL, err := getClientURL(config)
 	if err != nil {
 		return nil, err

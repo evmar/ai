@@ -1,4 +1,4 @@
-package config
+package llm
 
 import (
 	"fmt"
@@ -8,17 +8,17 @@ import (
 )
 
 type Config struct {
-	DefaultBackend string              `toml:"default_backend"`
-	Backend        map[string]*Backend `toml:"backend"`
+	DefaultBackend string                    `toml:"default_backend"`
+	Backend        map[string]*BackendConfig `toml:"backend"`
 }
 
-type Backend struct {
+type BackendConfig struct {
 	Mode  string `toml:"mode"`
 	URL   string `toml:"url"`
 	Model string `toml:"model"`
 }
 
-func Load() (*Config, error) {
+func LoadConfig() (*Config, error) {
 	path := os.ExpandEnv("$HOME/.config/ai.toml")
 	var config Config
 	if _, err := toml.DecodeFile(path, &config); err != nil {

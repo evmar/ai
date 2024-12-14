@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/evmar/ai/config"
 	"github.com/evmar/ai/llm"
 	"github.com/evmar/ai/net"
 )
@@ -19,7 +18,7 @@ type Client struct {
 	Verbose bool
 }
 
-func New(config *config.Backend) (*Client, error) {
+func New(config *llm.BackendConfig) (*Client, error) {
 	apikey := os.Getenv("GOOGLE_API_KEY")
 	if apikey == "" {
 		return nil, fmt.Errorf("set GOOGLE_API_KEY")
