@@ -10,6 +10,7 @@ import (
 	"github.com/evmar/ai/config"
 	"github.com/evmar/ai/google"
 	"github.com/evmar/ai/image"
+	"github.com/evmar/ai/llm"
 	"github.com/evmar/ai/ollama"
 	"github.com/evmar/ai/openai"
 )
@@ -54,7 +55,7 @@ func argOrStdin(arg string) (string, error) {
 	return arg, nil
 }
 
-type llm interface {
+type LLMText interface {
 	CallText(sys string, json bool, prompts []string) (string, error)
 }
 
@@ -69,7 +70,7 @@ func run(args []string) error {
 	}
 	mode, args := args[0], args[1:]
 
-	var llm llm
+	var backend LLMText
 	var oai *openai.Client
 
 	backendName := *flagBackend
@@ -79,12 +80,12 @@ func run(args []string) error {
 	if backendName == "" {
 		return fmt.Errorf("specify -backend or set default_backend in config")
 	}
-	backend, ok := config.Backend[backendName]
+	backendConfig, ok := config.Backend[backendName]
 	if !ok {
 		return fmt.Errorf("backend %q not found", backendName)
 	}
 
-	switch backend.Mode {
+	switch backendConfig.Mode {
 	case "":
 		return fmt.Errorf("backend %q needs mode= config", backendName)
 	case "openai":
@@ -93,22 +94,22 @@ func run(args []string) error {
 			return err
 		}
 		oai.Verbose = *flagVerbose
-		llm = oai
+		backend = oai
 	case "ollama":
-		c, err := ollama.New(backend)
+		c, err := ollama.New(backendConfig)
 		if err != nil {
 			return err
 		}
-		llm = c
+		backend = c
 	case "google":
-		c, err := google.New(backend)
+		c, err := google.New(backendConfig)
 		if err != nil {
 			return err
 		}
 		c.Verbose = *flagVerbose
-		llm = c
+		backend = c
 	default:
-		return fmt.Errorf("invalid backend mode %q", backend.Mode)
+		return fmt.Errorf("invalid backend mode %q", backendConfig.Mode)
 	}
 
 	switch mode {
@@ -160,11 +161,29 @@ func run(args []string) error {
 			return err
 		}
 		prompts = append(prompts, prompt)
-		msg, err := llm.CallText(*sys, *json, prompts)
-		if err != nil {
-			return err
+
+		if s, ok := backend.(llm.Streamed); ok {
+			stream, err := s.CallStreamed(*sys, *json, prompts)
+			if err != nil {
+				return err
+			}
+			for {
+				msg, err := stream.Next()
+				if err != nil {
+					if err != io.EOF {
+						return err
+					}
+					break
+				}
+				fmt.Print(msg)
+			}
+		} else {
+			msg, err := backend.CallText(*sys, *json, prompts)
+			if err != nil {
+				return err
+			}
+			fmt.Println(msg)
 		}
-		fmt.Println(msg)
 		return nil
 
 	case "tts":

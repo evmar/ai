@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"github.com/evmar/ai/config"
+	"github.com/evmar/ai/llm"
 	"github.com/evmar/ai/net"
 )
 
@@ -64,6 +65,22 @@ func parseText(body []byte) (string, error) {
 }
 
 func (c *Client) CallText(sys string, json bool, prompts []string) (string, error) {
+	panic("todo")
+}
+
+type Stream struct {
+	s *StreamedReader
+}
+
+func (s *Stream) Next() (string, error) {
+	var resp GenerateContentResponse
+	if err := s.s.Read(&resp); err != nil {
+		return "", err
+	}
+	return resp.Candidates[0].Content.Parts[0].Text, nil
+}
+
+func (c *Client) CallStreamed(sys string, json bool, prompts []string) (llm.Stream, error) {
 	parts := []map[string]interface{}{}
 	for _, prompt := range prompts {
 		parts = append(parts, map[string]interface{}{
@@ -79,20 +96,10 @@ func (c *Client) CallText(sys string, json bool, prompts []string) (string, erro
 
 	r, err := c.call(jsonReq)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	s := NewStreamedReader(r)
-	var body string
-	var resp GenerateContentResponse
-	for {
-		if err := s.Read(&resp); err != nil {
-			if err != io.EOF {
-				return "", err
-			}
-			break
-		}
-		body += resp.Candidates[0].Content.Parts[0].Text
-	}
-	return body, nil
+	return &Stream{s: NewStreamedReader(r)}, nil
 }
+
+var _ llm.Streamed = &Client{}
