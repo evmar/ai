@@ -26,13 +26,13 @@ func New(config *config.Backend) (*Client, error) {
 	return &Client{apikey: apikey, model: config.Model}, nil
 }
 
-func (c *Client) call(jsonReq map[string]interface{}) ([]byte, error) {
+func (c *Client) call(jsonReq map[string]interface{}) (io.Reader, error) {
 	body, err := json.Marshal(jsonReq)
 	if err != nil {
 		return nil, err
 	}
 
-	url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s", c.model, c.apikey)
+	url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/%s:streamGenerateContent?key=%s", c.model, c.apikey)
 
 	req, err := http.NewRequest("POST", url, bytes.NewReader(body))
 	if err != nil {
@@ -51,7 +51,7 @@ func (c *Client) call(jsonReq map[string]interface{}) ([]byte, error) {
 		return nil, fmt.Errorf("http status %d", resp.StatusCode)
 	}
 
-	return io.ReadAll(resp.Body)
+	return resp.Body, nil
 }
 
 func parseText(body []byte) (string, error) {
@@ -77,9 +77,22 @@ func (c *Client) CallText(sys string, json bool, prompts []string) (string, erro
 		},
 	}
 
-	out, err := c.call(jsonReq)
+	r, err := c.call(jsonReq)
 	if err != nil {
 		return "", err
 	}
-	return parseText(out)
+
+	s := NewStreamedReader(r)
+	var body string
+	var resp GenerateContentResponse
+	for {
+		if err := s.Read(&resp); err != nil {
+			if err != io.EOF {
+				return "", err
+			}
+			break
+		}
+		body += resp.Candidates[0].Content.Parts[0].Text
+	}
+	return body, nil
 }
