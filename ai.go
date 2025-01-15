@@ -146,25 +146,29 @@ func run(args []string) error {
 			flags.Parse(args)
 
 			if *multi != "" {
-				var err error
-				prompt.Prompts, err = parseMulti(*multi)
+				msgs, err := parseMulti(*multi)
 				if err != nil {
 					return err
 				}
+				for _, msg := range msgs {
+					prompt.Messages = append(prompt.Messages, msg)
+				}
 			}
 			args = flags.Args()
-			if len(args) != 1 {
-				return fmt.Errorf("specify prompt")
+			if len(args) > 1 {
+				return fmt.Errorf("too many arguments")
 			}
-			arg, err := argOrStdin(args[0])
-			if err != nil {
-				return err
+			if len(args) == 1 {
+				arg, err := argOrStdin(args[0])
+				if err != nil {
+					return err
+				}
+				prompt.Messages = append(prompt.Messages, arg)
 			}
-			prompt.Prompts = append(prompt.Prompts, arg)
 		}
 
 		if s, ok := backend.(llm.Streamed); ok {
-			stream, err := s.CallStreamed(prompt.System, prompt.JSON, prompt.Prompts)
+			stream, err := s.CallStreamed(prompt.System, prompt.JSON, prompt.Messages)
 			if err != nil {
 				return err
 			}

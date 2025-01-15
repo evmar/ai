@@ -51,27 +51,13 @@ func (c *Client) Call(prompt *llm.Prompt) (string, error) {
 		panic("json not implemented")
 	}
 	ctx := context.Background()
-	if len(prompt.Prompts) == 1 {
-		req := &api.GenerateRequest{Model: c.model, Prompt: prompt.Prompts[0]}
-		if prompt.System != "" {
-			req.System = prompt.System
-		}
-
-		resp := func(resp api.GenerateResponse) error {
-			fmt.Print(resp.Response)
-			return nil
-		}
-		err := c.client.Generate(ctx, req, resp)
-		if err != nil {
-			return "", err
-		}
-	} else {
+	if len(prompt.Messages) == 1 {
 		if prompt.System != "" {
 			panic("system prompt not implemented")
 		}
 
 		req := &api.ChatRequest{Model: c.model}
-		for i, prompt := range prompt.Prompts {
+		for i, prompt := range prompt.Messages {
 			var role string
 			if i%2 == 0 {
 				role = "user"

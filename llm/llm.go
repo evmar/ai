@@ -5,11 +5,13 @@ type Stream interface {
 }
 
 type Streamed interface {
-	CallStreamed(sys string, json bool, prompts []string) (Stream, error)
+	CallStreamed(sys string, json bool, msgs []string) (Stream, error)
 }
 
+type Message interface{}
+
 type Prompt struct {
-	System  string
-	JSON    bool
-	Prompts []string
+	System   string
+	JSON     bool
+	Messages []string
 }

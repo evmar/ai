@@ -106,7 +106,7 @@ func (oai *Client) Call(prompt *llm.Prompt) (string, error) {
 			},
 		)
 	}
-	for i, prompt := range prompt.Prompts {
+	for i, prompt := range prompt.Messages {
 		var role string
 		if i%2 == 0 {
 			role = "user"
