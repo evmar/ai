@@ -140,9 +140,6 @@ func run(args []string) error {
 		multi := flags.String("multi", "", "multi-shot input")
 		json := flags.Bool("json", false, "output json")
 		flags.Parse(args)
-		if *sys == "" {
-			return fmt.Errorf("specify -sys")
-		}
 		prompts := []string{}
 		if *multi != "" {
 			var err error

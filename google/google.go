@@ -93,12 +93,14 @@ func (c *Client) CallStreamed(sys string, json bool, prompts []string) (llm.Stre
 	}
 
 	jsonReq := map[string]interface{}{
-		"system_instruction": map[string]interface{}{
+		"contents": contents,
+	}
+	if sys != "" {
+		jsonReq["system_instruction"] = map[string]interface{}{
 			"parts": map[string]interface{}{
 				"text": sys,
 			},
-		},
-		"contents": contents,
+		}
 	}
 
 	r, err := c.call(jsonReq)
