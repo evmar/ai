@@ -217,7 +217,7 @@ func run(args []string) error {
 func main() {
 	flag.Parse()
 	if err := run(flag.Args()); err != nil {
-		fmt.Printf("error: %s\n", err)
+		fmt.Fprintf(os.Stderr, "error: %s\n", err)
 		os.Exit(1)
 	}
 }
