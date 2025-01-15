@@ -202,7 +202,7 @@ func run(args []string) error {
 		return nil
 	}
 
-	return fmt.Errorf("invalid mode")
+	return fmt.Errorf("invalid mode, must be one of {img,text,tts}")
 }
 
 func main() {
