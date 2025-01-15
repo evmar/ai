@@ -46,15 +46,15 @@ func New(config *llm.BackendConfig) (*Client, error) {
 	return &Client{client: client, model: config.Model}, nil
 }
 
-func (c *Client) CallText(sys string, json bool, prompts []string) (string, error) {
-	if json {
+func (c *Client) Call(prompt *llm.Prompt) (string, error) {
+	if prompt.JSON {
 		panic("json not implemented")
 	}
 	ctx := context.Background()
-	if len(prompts) == 1 {
-		req := &api.GenerateRequest{Model: c.model, Prompt: prompts[0]}
-		if sys != "" {
-			req.System = sys
+	if len(prompt.Prompts) == 1 {
+		req := &api.GenerateRequest{Model: c.model, Prompt: prompt.Prompts[0]}
+		if prompt.System != "" {
+			req.System = prompt.System
 		}
 
 		resp := func(resp api.GenerateResponse) error {
@@ -66,8 +66,12 @@ func (c *Client) CallText(sys string, json bool, prompts []string) (string, erro
 			return "", err
 		}
 	} else {
+		if prompt.System != "" {
+			panic("system prompt not implemented")
+		}
+
 		req := &api.ChatRequest{Model: c.model}
-		for i, prompt := range prompts {
+		for i, prompt := range prompt.Prompts {
 			var role string
 			if i%2 == 0 {
 				role = "user"
@@ -89,5 +93,6 @@ func (c *Client) CallText(sys string, json bool, prompts []string) (string, erro
 		}
 	}
 
+	// TODO: streaming, not printing
 	return "", nil
 }

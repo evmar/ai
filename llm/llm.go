@@ -7,3 +7,9 @@ type Stream interface {
 type Streamed interface {
 	CallStreamed(sys string, json bool, prompts []string) (Stream, error)
 }
+
+type Prompt struct {
+	System  string
+	JSON    bool
+	Prompts []string
+}
