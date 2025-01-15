@@ -143,6 +143,14 @@ func run(args []string) error {
 			flags.StringVar(&prompt.System, "sys", "", "system prompt")
 			multi := flags.String("multi", "", "multi-shot input")
 			flags.BoolVar(&prompt.JSON, "json", false, "output json")
+			flags.Func("image", "image to attach", func(val string) error {
+				img, err := image.LoadImage(val)
+				if err != nil {
+					return err
+				}
+				prompt.Images = append(prompt.Images, img)
+				return nil
+			})
 			flags.Parse(args)
 
 			if *multi != "" {
