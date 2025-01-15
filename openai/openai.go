@@ -120,7 +120,7 @@ func (oai *Client) Call(prompt *llm.Prompt) (string, error) {
 	}
 
 	params := map[string]interface{}{
-		"model":      "gpt-3.5-turbo",
+		"model":      "gpt-4o-mini",
 		"messages":   messages,
 		"max_tokens": 500,
 	}
