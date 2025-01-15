@@ -200,9 +200,18 @@ func run(args []string) error {
 			return err
 		}
 		return nil
+
+	case "config":
+		fmt.Println("config file:", llm.ConfigPath())
+		t, err := config.ToTOML()
+		if err != nil {
+			return err
+		}
+		fmt.Println(t)
+		return nil
 	}
 
-	return fmt.Errorf("invalid mode, must be one of {img,text,tts}")
+	return fmt.Errorf("invalid mode, must be one of {img,text,tts,config}")
 }
 
 func main() {
