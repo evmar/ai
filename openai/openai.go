@@ -11,6 +11,7 @@ import (
 	"os"
 
 	"github.com/evmar/ai/image"
+	"github.com/evmar/ai/llm"
 	"github.com/evmar/ai/net"
 	"github.com/evmar/ai/rawjson"
 )
@@ -95,17 +96,17 @@ func parse(body []byte) (string, error) {
 	return j.Get("choices").GetIndex(0).Get("message").Get("content").String(), nil
 }
 
-func (oai *Client) CallText(sys string, json bool, prompts []string) (string, error) {
+func (oai *Client) Call(prompt *llm.Prompt) (string, error) {
 	messages := []interface{}{}
-	if sys != "" {
+	if prompt.System != "" {
 		messages = append(messages,
 			map[string]interface{}{
 				"role":    "system",
-				"content": sys,
+				"content": prompt.System,
 			},
 		)
 	}
-	for i, prompt := range prompts {
+	for i, prompt := range prompt.Prompts {
 		var role string
 		if i%2 == 0 {
 			role = "user"
@@ -123,7 +124,7 @@ func (oai *Client) CallText(sys string, json bool, prompts []string) (string, er
 		"messages":   messages,
 		"max_tokens": 500,
 	}
-	if json {
+	if prompt.JSON {
 		params["response_format"] = map[string]interface{}{"type": "json_object"}
 	}
 

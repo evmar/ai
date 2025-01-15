@@ -63,7 +63,7 @@ func parseText(body []byte) (string, error) {
 	return text, nil
 }
 
-func (c *Client) CallText(sys string, json bool, prompts []string) (string, error) {
+func (c *Client) Call(prompt *llm.Prompt) (string, error) {
 	panic("todo")
 }
 

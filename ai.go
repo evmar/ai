@@ -54,8 +54,9 @@ func argOrStdin(arg string) (string, error) {
 	return arg, nil
 }
 
-type LLMText interface {
-	CallText(sys string, json bool, prompts []string) (string, error)
+type LLM interface {
+	// TODO: streaming only
+	Call(prompt *llm.Prompt) (string, error)
 }
 
 func run(args []string) error {
@@ -69,7 +70,7 @@ func run(args []string) error {
 	}
 	mode, args := args[0], args[1:]
 
-	var backend LLMText
+	var backend LLM
 	var oai *openai.Client
 
 	backendName := *flagBackend
@@ -135,31 +136,35 @@ func run(args []string) error {
 		return nil
 
 	case "text":
-		flags := flag.NewFlagSet("text", flag.ExitOnError)
-		sys := flags.String("sys", "", "system prompt")
-		multi := flags.String("multi", "", "multi-shot input")
-		json := flags.Bool("json", false, "output json")
-		flags.Parse(args)
-		prompts := []string{}
-		if *multi != "" {
-			var err error
-			prompts, err = parseMulti(*multi)
+		prompt := &llm.Prompt{}
+
+		{
+			flags := flag.NewFlagSet("text", flag.ExitOnError)
+			flags.StringVar(&prompt.System, "sys", "", "system prompt")
+			multi := flags.String("multi", "", "multi-shot input")
+			flags.BoolVar(&prompt.JSON, "json", false, "output json")
+			flags.Parse(args)
+
+			if *multi != "" {
+				var err error
+				prompt.Prompts, err = parseMulti(*multi)
+				if err != nil {
+					return err
+				}
+			}
+			args = flags.Args()
+			if len(args) != 1 {
+				return fmt.Errorf("specify prompt")
+			}
+			arg, err := argOrStdin(args[0])
 			if err != nil {
 				return err
 			}
+			prompt.Prompts = append(prompt.Prompts, arg)
 		}
-		args = flags.Args()
-		if len(args) != 1 {
-			return fmt.Errorf("specify prompt")
-		}
-		prompt, err := argOrStdin(args[0])
-		if err != nil {
-			return err
-		}
-		prompts = append(prompts, prompt)
 
 		if s, ok := backend.(llm.Streamed); ok {
-			stream, err := s.CallStreamed(*sys, *json, prompts)
+			stream, err := s.CallStreamed(prompt.System, prompt.JSON, prompt.Prompts)
 			if err != nil {
 				return err
 			}
@@ -174,7 +179,7 @@ func run(args []string) error {
 				fmt.Print(msg)
 			}
 		} else {
-			msg, err := backend.CallText(*sys, *json, prompts)
+			msg, err := backend.Call(prompt)
 			if err != nil {
 				return err
 			}
