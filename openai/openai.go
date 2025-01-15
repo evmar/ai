@@ -106,6 +106,18 @@ func (oai *Client) Call(prompt *llm.Prompt) (string, error) {
 			},
 		)
 	}
+
+	imageContent := []interface{}{}
+	for _, img := range prompt.Images {
+		imageContent = append(imageContent, map[string]interface{}{
+			"type": "image_url",
+			"image_url": map[string]interface{}{
+				"url":    fmt.Sprintf("data:%s;base64,%s", img.MimeType, base64.StdEncoding.EncodeToString(img.Data)),
+				"detail": "high",
+			},
+		})
+	}
+
 	for i, prompt := range prompt.Messages {
 		var role string
 		if i%2 == 0 {
@@ -113,9 +125,18 @@ func (oai *Client) Call(prompt *llm.Prompt) (string, error) {
 		} else {
 			role = "assistant"
 		}
+
+		var content interface{} = prompt
+		if i == 0 && len(imageContent) > 0 {
+			imageContent = append(imageContent, map[string]interface{}{
+				"type": "text",
+				"text": prompt,
+			})
+			content = imageContent
+		}
 		messages = append(messages, map[string]interface{}{
 			"role":    role,
-			"content": prompt,
+			"content": content,
 		})
 	}
 
