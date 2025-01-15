@@ -1,6 +1,8 @@
 package rawjson
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 type RJSON struct {
 	data interface{}
@@ -23,8 +25,11 @@ func (r *RJSON) Map() map[string]interface{} {
 }
 
 func (r *RJSON) Get(key string) *RJSON {
-	m := r.Map()
-	return New(m[key])
+	val := r.Map()[key]
+	if val == nil {
+		return nil
+	}
+	return New(val)
 }
 
 func (r *RJSON) Array() []interface{} {

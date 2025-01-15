@@ -83,6 +83,18 @@ func (oai *Client) call(url string, jsonReq map[string]interface{}) ([]byte, err
 	return body, err
 }
 
+func parse(body []byte) (string, error) {
+	j, err := rawjson.Parse(body)
+	if err != nil {
+		return "", err
+	}
+	if err := getError(j); err != nil {
+		return "", err
+	}
+
+	return j.Get("choices").GetIndex(0).Get("message").Get("content").String(), nil
+}
+
 func (oai *Client) CallText(sys string, json bool, prompts []string) (string, error) {
 	messages := []interface{}{
 		map[string]interface{}{
@@ -116,16 +128,7 @@ func (oai *Client) CallText(sys string, json bool, prompts []string) (string, er
 	if err != nil {
 		return "", err
 	}
-	j, err := rawjson.Parse(body)
-	if err != nil {
-		return "", err
-	}
-	if err := getError(j); err != nil {
-		return "", err
-	}
-
-	msg := j.Get("choices").GetIndex(0).Get("message").Get("content").String()
-	return msg, nil
+	return parse(body)
 }
 
 func (oai *Client) CallVision(image *image.LoadedImage, prompt string) (string, error) {
