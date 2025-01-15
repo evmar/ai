@@ -96,11 +96,14 @@ func parse(body []byte) (string, error) {
 }
 
 func (oai *Client) CallText(sys string, json bool, prompts []string) (string, error) {
-	messages := []interface{}{
-		map[string]interface{}{
-			"role":    "system",
-			"content": sys,
-		},
+	messages := []interface{}{}
+	if sys != "" {
+		messages = append(messages,
+			map[string]interface{}{
+				"role":    "system",
+				"content": sys,
+			},
+		)
 	}
 	for i, prompt := range prompts {
 		var role string
