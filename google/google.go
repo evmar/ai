@@ -80,17 +80,25 @@ func (s *Stream) Next() (string, error) {
 }
 
 func (c *Client) CallStreamed(sys string, json bool, prompts []string) (llm.Stream, error) {
-	parts := []map[string]interface{}{}
+	// Confusingly, the docs say that the "Content" type used for system_instruction and contents
+	// should have a parts[] array, but in fact it's just a single part.
+
+	contents := []map[string]interface{}{}
 	for _, prompt := range prompts {
-		parts = append(parts, map[string]interface{}{
-			"text": prompt,
+		contents = append(contents, map[string]interface{}{
+			"parts": map[string]interface{}{
+				"text": prompt,
+			},
 		})
 	}
 
 	jsonReq := map[string]interface{}{
-		"contents": map[string]interface{}{
-			"parts": parts,
+		"system_instruction": map[string]interface{}{
+			"parts": map[string]interface{}{
+				"text": sys,
+			},
 		},
+		"contents": contents,
 	}
 
 	r, err := c.call(jsonReq)
