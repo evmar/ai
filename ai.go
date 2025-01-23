@@ -136,9 +136,7 @@ func run(args []string) error {
 				if err != nil {
 					return err
 				}
-				for _, msg := range msgs {
-					prompt.Messages = append(prompt.Messages, msg)
-				}
+				prompt.Messages = append(prompt.Messages, msgs...)
 			}
 			args = flags.Args()
 			if len(args) > 1 {
