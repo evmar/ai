@@ -54,6 +54,50 @@ func argOrStdin(arg string) (string, error) {
 	return arg, nil
 }
 
+type TTS interface {
+	CallSpeech(text, outPath string) error
+}
+
+func getBackend(config *llm.Config, name string) (llm.LLM, error) {
+	if name == "" {
+		name = config.DefaultBackend
+	}
+	if name == "" {
+		return nil, fmt.Errorf("specify -backend or set default_backend in config")
+	}
+	cfg, ok := config.Backend[name]
+	if !ok {
+		return nil, fmt.Errorf("backend %q not found", name)
+	}
+
+	switch cfg.Mode {
+	case "":
+		return nil, fmt.Errorf("backend %q needs mode= config", name)
+	case "openai":
+		c, err := openai.New()
+		if err != nil {
+			return nil, err
+		}
+		c.Verbose = *flagVerbose
+		return c, nil
+	case "ollama":
+		c, err := ollama.New(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return c, nil
+	case "google":
+		c, err := google.New(cfg)
+		if err != nil {
+			return nil, err
+		}
+		c.Verbose = *flagVerbose
+		return c, nil
+	default:
+		return nil, fmt.Errorf("invalid backend mode %q", cfg.Mode)
+	}
+}
+
 func run(args []string) error {
 	config, err := llm.LoadConfig()
 	if err != nil {
@@ -65,46 +109,9 @@ func run(args []string) error {
 	}
 	mode, args := args[0], args[1:]
 
-	var backend llm.LLM
-	var oai *openai.Client
-
-	backendName := *flagBackend
-	if backendName == "" {
-		backendName = config.DefaultBackend
-	}
-	if backendName == "" {
-		return fmt.Errorf("specify -backend or set default_backend in config")
-	}
-	backendConfig, ok := config.Backend[backendName]
-	if !ok {
-		return fmt.Errorf("backend %q not found", backendName)
-	}
-
-	switch backendConfig.Mode {
-	case "":
-		return fmt.Errorf("backend %q needs mode= config", backendName)
-	case "openai":
-		oai, err = openai.New()
-		if err != nil {
-			return err
-		}
-		oai.Verbose = *flagVerbose
-		backend = oai
-	case "ollama":
-		c, err := ollama.New(backendConfig)
-		if err != nil {
-			return err
-		}
-		backend = c
-	case "google":
-		c, err := google.New(backendConfig)
-		if err != nil {
-			return err
-		}
-		c.Verbose = *flagVerbose
-		backend = c
-	default:
-		return fmt.Errorf("invalid backend mode %q", backendConfig.Mode)
+	backend, err := getBackend(config, *flagBackend)
+	if err != nil {
+		return err
 	}
 
 	switch mode {
@@ -171,6 +178,11 @@ func run(args []string) error {
 		return nil
 
 	case "tts":
+		tts, ok := backend.(TTS)
+		if !ok {
+			return fmt.Errorf("backend doesn't support TTS")
+		}
+
 		flags := flag.NewFlagSet("tts", flag.ExitOnError)
 		flags.Parse(args)
 		args = flags.Args()
@@ -181,7 +193,7 @@ func run(args []string) error {
 		if err != nil {
 			return err
 		}
-		if err := oai.CallSpeech(text, "out.mp3"); err != nil {
+		if err := tts.CallSpeech(text, "out.mp3"); err != nil {
 			return err
 		}
 		return nil
