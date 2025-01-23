@@ -17,6 +17,8 @@ type Client struct {
 	model  string
 }
 
+var _ llm.LLM = (*Client)(nil)
+
 func getClientURL(config *llm.BackendConfig) (*url.URL, error) {
 	if config.URL != "" {
 		return url.Parse(config.URL)
