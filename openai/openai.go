@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/evmar/ai/image"
 	"github.com/evmar/ai/llm"
 	"github.com/evmar/ai/net"
 	"github.com/evmar/ai/rawjson"
@@ -154,44 +153,6 @@ func (oai *Client) Call(prompt *llm.Prompt) (string, error) {
 		return "", err
 	}
 	return parse(body)
-}
-
-func (oai *Client) CallVision(image *image.LoadedImage, prompt string) (string, error) {
-	body, err := oai.call("https://api.openai.com/v1/chat/completions", map[string]interface{}{
-		"model": "gpt-4-vision-preview",
-		"messages": []interface{}{
-			map[string]interface{}{
-				"role": "user",
-				"content": []interface{}{
-					map[string]interface{}{
-						"type": "text",
-						"text": prompt,
-					},
-					map[string]interface{}{
-						"type": "image_url",
-						"image_url": map[string]interface{}{
-							"url":    fmt.Sprintf("data:%s;base64,%s", image.MimeType, base64.StdEncoding.EncodeToString(image.Data)),
-							"detail": "high",
-						},
-					},
-				},
-			},
-		},
-		"max_tokens": 4096,
-	})
-	if err != nil {
-		return "", err
-	}
-	j, err := rawjson.Parse(body)
-	if err != nil {
-		return "", err
-	}
-	if err := getError(j); err != nil {
-		return "", err
-	}
-
-	msg := j.Get("choices").GetIndex(0).Get("message").Get("content").String()
-	return msg, nil
 }
 
 func (oai *Client) CallSpeech(text, outPath string) error {
