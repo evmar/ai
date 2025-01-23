@@ -113,28 +113,6 @@ func run(args []string) error {
 	}
 
 	switch mode {
-	case "img":
-		flags := flag.NewFlagSet("img", flag.ExitOnError)
-		prompt := flags.String("prompt", "", "prompt")
-		imagePath := flags.String("image", "", "image path")
-		flags.Parse(args)
-		if *prompt == "" {
-			return fmt.Errorf("specify -prompt")
-		}
-		if *imagePath == "" {
-			return fmt.Errorf("specify -image path")
-		}
-		imageBytes, err := image.LoadImage(*imagePath)
-		if err != nil {
-			return err
-		}
-		msg, err := oai.CallVision(imageBytes, *prompt)
-		if err != nil {
-			return err
-		}
-		fmt.Println(msg)
-		return nil
-
 	case "text":
 		prompt := &llm.Prompt{}
 
@@ -225,7 +203,7 @@ func run(args []string) error {
 		return nil
 	}
 
-	return fmt.Errorf("invalid mode, must be one of {img,text,tts,config}")
+	return fmt.Errorf("invalid mode, must be one of {text,tts,config}")
 }
 
 func main() {
