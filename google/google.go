@@ -18,6 +18,8 @@ type Client struct {
 	Verbose bool
 }
 
+var _ llm.LLM = (*Client)(nil)
+
 func New(config *llm.BackendConfig) (*Client, error) {
 	apikey := os.Getenv("GOOGLE_API_KEY")
 	if apikey == "" {

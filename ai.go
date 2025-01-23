@@ -54,11 +54,6 @@ func argOrStdin(arg string) (string, error) {
 	return arg, nil
 }
 
-type LLM interface {
-	// TODO: streaming only
-	Call(prompt *llm.Prompt) (string, error)
-}
-
 func run(args []string) error {
 	config, err := llm.LoadConfig()
 	if err != nil {
@@ -70,7 +65,7 @@ func run(args []string) error {
 	}
 	mode, args := args[0], args[1:]
 
-	var backend LLM
+	var backend llm.LLM
 	var oai *openai.Client
 
 	backendName := *flagBackend

@@ -38,6 +38,8 @@ type Client struct {
 	Verbose bool
 }
 
+var _ llm.LLM = (*Client)(nil)
+
 func New() (*Client, error) {
 	openaiToken := os.Getenv("OPENAI_API_KEY")
 	if openaiToken == "" {

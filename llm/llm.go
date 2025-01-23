@@ -20,3 +20,8 @@ type Prompt struct {
 	Messages []string
 	Images   []*image.LoadedImage
 }
+
+type LLM interface {
+	// TODO: streaming only
+	Call(prompt *Prompt) (string, error)
+}
